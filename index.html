@@ -3,146 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LYRA — Your Human Companion</title>
+<title>LYRA — Sovereign Companion</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Mono:wght@300;400&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&family=DM+Mono:wght@300;400&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #080c10; --surface: #0e1318; --glass: rgba(255,255,255,0.04);
-    --border: rgba(255,255,255,0.07); --accent: #7ee8c4; --accent2: #a78bfa;
-    --text: #e8eaf0; --muted: #5a6070; --warm: #f4c97a;
-    --special-accent: #ff8fab; --special-accent2: #ffd6e0; --radius: 20px;
+    --border: rgba(255,255,255,0.07); --accent: #7ee8c4; --text: #e8eaf0;
+    --muted: #5a6070; --special: #ff8fab; --radius: 20px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; overflow-x: hidden; transition: all 0.6s ease; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; transition: all 0.6s ease; overflow-x: hidden; }
 
-  /* Background Mesh & Grain from original Lyra source */
-  .bg-mesh { position: fixed; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse 80% 60% at 20% 10%, rgba(126,232,196,0.06) 0%, transparent 60%), radial-gradient(ellipse 60% 80% at 80% 80%, rgba(167,139,250,0.06) 0%, transparent 60%); animation: meshShift 12s ease-in-out infinite alternate; }
-  @keyframes meshShift { from { opacity: 1; } to { opacity: 0.6; filter: hue-rotate(15deg); } }
+  /* Background Mesh & Grain */
+  .bg-mesh { position: fixed; inset: 0; z-index: 0; background: radial-gradient(circle at 20% 10%, rgba(126,232,196,0.05), transparent 50%), radial-gradient(circle at 80% 80%, rgba(167,139,250,0.05), transparent 50%); }
 
-  /* Merged Avatar Container */
+  .app { position: relative; z-index: 2; max-width: 800px; margin: 0 auto; padding: 40px 20px; display: flex; flex-direction: column; gap: 30px; }
+
+  /* Fixed Avatar Container */
+  .avatar-section { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+  .avatar-wrap { position: relative; width: 150px; height: 150px; }
+  .avatar-ring { position: absolute; inset: -5px; border-radius: 50%; background: conic-gradient(from 0deg, var(--accent), transparent, var(--accent)); animation: spin 4s linear infinite; opacity: 0.5; }
+  
   .avatar-face {
     position: absolute; inset: 0; border-radius: 50%; background: #000;
+    overflow: hidden; border: 2px solid var(--border);
     display: flex; align-items: center; justify-content: center;
-    overflow: hidden; border: 2px solid rgba(126,232,196,0.15);
   }
 
-  #avatarImg {
-    width: 100%; height: 100%; object-fit: cover;
-    filter: saturate(0.8) contrast(1.1); transition: all 0.5s ease;
-  }
+  #avatarImg { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+  .avatar-wrap.thinking #avatarImg { animation: breathe 3s infinite ease-in-out; }
 
-  /* Living Metabolism Animation */
-  .avatar-wrap.thinking #avatarImg {
-    animation: avatarBreathe 3s infinite ease-in-out;
-    filter: saturate(1.1) brightness(1.1);
-  }
-  @keyframes avatarBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-  .attribution-overlay {
-    position: absolute; bottom: 8px; font-size: 8px; color: var(--muted);
-    opacity: 0; transition: 0.3s; pointer-events: none;
-  }
-  .avatar-wrap:hover .attribution-overlay { opacity: 0.6; }
+  /* UI Elements */
+  .speech-bubble { background: var(--glass); border: 1px solid var(--border); padding: 25px; border-radius: var(--radius); backdrop-filter: blur(10px); }
+  .speech-text { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic; line-height: 1.4; }
+  
+  .camera-panel { width: 100%; aspect-ratio: 16/9; background: #000; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--border); }
+  #cameraFeed { width: 100%; height: 100%; object-fit: cover; }
 
-  /* Re-integrating necessary UI components from source */
-  .app { position: relative; z-index: 2; max-width: 960px; margin: 0 auto; padding: 20px; }
-  .camera-panel { background: var(--glass); border: 1px solid var(--border); border-radius: var(--radius); aspect-ratio: 16/9; max-height: 260px; overflow: hidden; position: relative; }
-  #cameraFeed { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-  .hidden { display: none; }
-  /* ... Remaining Lyra UI CSS omitted for brevity but maintained in your push ... */
+  .input-area { display: flex; gap: 10px; }
+  input { flex: 1; background: var(--glass); border: 1px solid var(--border); border-radius: 12px; padding: 15px; color: #fff; font-family: inherit; }
+  button { background: var(--accent); border: none; padding: 0 25px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+
+  .mode-toggle { display: flex; gap: 10px; justify-content: center; }
+  .mode-btn { background: var(--glass); color: var(--muted); padding: 8px 15px; border: 1px solid var(--border); border-radius: 20px; font-size: 10px; }
+  .mode-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
 </style>
 </head>
 <body>
-<div class="bg-mesh"></div>
-<div class="app">
-  <header>
-    <div class="logo">LYRA</div>
+  <div class="bg-mesh"></div>
+  <div class="app">
     <div class="mode-toggle">
-      <button class="mode-btn active" id="normalBtn" onclick="setMode('normal')">Normal</button>
-      <button class="mode-btn" id="specialBtn" onclick="setMode('special')">Special</button>
+      <button class="mode-btn active" id="btnNorm" onclick="setMode('normal')">NORMAL</button>
+      <button class="mode-btn" id="btnSpec" onclick="setMode('special')">SPECIAL</button>
     </div>
-  </header>
 
-  <main>
     <div class="avatar-section">
-      <div class="avatar-wrap" id="avatarWrap">
+      <div class="avatar-wrap" id="avWrap">
         <div class="avatar-ring"></div>
         <div class="avatar-face">
-          <img src="roman-holoschchuk-KAPRQjlSzCA-unsplash.jpg" id="avatarImg" alt="Human Companion">
-          <div class="attribution-overlay">Roman Holoschchuk / Unsplash</div>
+          <img src="roman-holoschchuk-KAPRQjlSzCA-unsplash.jpg" id="avatarImg">
         </div>
       </div>
-      <div class="lyra-name">Lyra</div>
-      <div class="lyra-sub" id="lyraStatus">Ready to chat</div>
+      <h1 style="font-family: 'Syne'; letter-spacing: 5px;">LYRA</h1>
+    </div>
+
+    <div class="speech-bubble">
+      <p class="speech-text" id="speechOut">I'm listening, Pioneer.</p>
     </div>
 
     <div class="camera-panel">
-      <video id="cameraFeed" autoplay playsinline muted></video>
-      <canvas id="snapCanvas" class="hidden"></canvas>
+      <video id="cameraFeed" autoplay playsinline></video>
     </div>
 
-    <div class="speech-area">
-      <div class="speech-bubble"><div class="speech-text" id="speechText">I'm listening, Pioneer.</div></div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Command Lyra..." onkeypress="if(e.key==='Enter') send()">
+      <button onclick="send()">SEND</button>
     </div>
-  </main>
-</div>
+  </div>
 
-<script>
-let currentMode = 'normal';
-const visionVerbs = ['look', 'see', 'watch', 'identify', 'find'];
+  <script>
+    let currentMode = 'normal';
 
-// Sovereign Local Communication [Replaced Gemini Logic from cite: 7]
-async function processInput(text) {
-  setThinking(true);
-  let endpoint = 'http://localhost:3000/chat';
-  let payload = { prompt: text, mode: currentMode };
+    function setMode(m) {
+      currentMode = m;
+      document.getElementById('btnNorm').classList.toggle('active', m === 'normal');
+      document.getElementById('btnSpec').classList.toggle('active', m === 'special');
+    }
 
-  if (visionVerbs.some(v => text.includes(v))) {
-    endpoint = 'http://localhost:3000/vision';
-    const canvas = document.getElementById('snapCanvas');
-    const video = document.getElementById('cameraFeed');
-    canvas.getContext('2d').drawImage(video, 0, 0);
-    payload.image = canvas.toDataURL('image/jpeg');
-  }
+    async function send() {
+      const input = document.getElementById('userInput');
+      const text = input.value;
+      if(!text) return;
+      
+      input.value = '';
+      document.getElementById('avWrap').classList.add('thinking');
 
-  try {
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      try {
+        const response = await fetch('http://localhost:3000/chat', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ prompt: text, mode: currentMode })
+        });
+        const data = await response.json();
+        document.getElementById('speechOut').innerText = data.reply;
+      } catch (e) {
+        document.getElementById('speechOut').innerText = "Local core offline.";
+      } finally {
+        document.getElementById('avWrap').classList.remove('thinking');
+      }
+    }
+
+    navigator.mediaDevices.getUserMedia({video: true}).then(s => {
+      document.getElementById('cameraFeed').srcObject = s;
     });
-    const data = await res.json();
-    handleResponse(data.reply);
-  } catch (e) {
-    handleResponse("Local core offline. Check Node.js server.");
-  }
-}
-
-function setThinking(val) {
-  const wrap = document.getElementById('avatarWrap');
-  const status = document.getElementById('lyraStatus');
-  if (val) {
-    wrap.classList.add('thinking');
-    status.innerText = "Processing...";
-  } else {
-    wrap.classList.remove('thinking');
-    status.innerText = currentMode === 'special' ? 'Special Mode Active' : 'Ready to chat';
-  }
-}
-
-function handleResponse(text) {
-  setThinking(false);
-  document.getElementById('speechText').innerText = text;
-  const synth = window.speechSynthesis;
-  synth.speak(new SpeechSynthesisUtterance(text));
-}
-
-// Initializing Camera
-navigator.mediaDevices.getUserMedia({ video: true }).then(s => {
-  document.getElementById('cameraFeed').srcObject = s;
-});
-</script>
+  </script>
 </body>
 </html>
